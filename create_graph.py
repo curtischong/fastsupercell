@@ -134,6 +134,60 @@ def brute_force_knn(
     return torch.topk(dist, k, largest=False, sorted=True)
 
 
+def positions_to_graph(supercell_positions:torch.Tensor, positions:torch.Tensor, radius:float, max_number_neighbors:int, library:str, n_workers:int):
+    # Build a KDTree from the supercell positions.
+    # Query that KDTree just for the positions in the central cell.
+    tree_data = supercell_positions.clone().detach().cpu().numpy()
+    tree_query = positions.clone().detach().cpu().numpy()
+    distance_upper_bound = np.array(radius) + 1e-8
+    num_positions = positions.shape[0]
+
+    if library == "scipy":
+        tree = SciKDTree(tree_data, leafsize=100)
+        _, nearest_img_neighbors = tree.query(
+            tree_query,
+            max_number_neighbors + 1,
+            distance_upper_bound=distance_upper_bound,
+            workers=n_workers,
+            p=2,
+        )
+        # Remove the self-edge that will be closest
+        index_array = np.array(nearest_img_neighbors)[:, 1:]  # type: ignore
+        # Remove any entry that equals len(supercell_positions), which are negative hits
+        receivers_imgs = index_array[index_array != len(supercell_positions)]
+        num_neighbors_per_position = (index_array != len(supercell_positions)).sum(
+            -1
+        )
+    elif library == "pynanoflann":
+        tree = NanoKDTree(
+            n_neighbors=min(max_number_neighbors + 1, len(supercell_positions)),
+            radius=radius,
+            leaf_size=100,
+            metric="l2",
+        )
+        tree.fit(tree_data)
+        distance_values, nearest_img_neighbors = tree.kneighbors(
+            tree_query, n_jobs=n_workers
+        )
+        nearest_img_neighbors = nearest_img_neighbors.astype(np.int32)  # type: ignore
+
+        # remove the self node which will be closest
+        index_array = nearest_img_neighbors[:, 1:]
+        # remove distances greater than radius
+        within_radius = distance_values[:, 1:] < (radius + 1e-6)
+        receivers_imgs = index_array[within_radius]
+        num_neighbors_per_position = within_radius.sum(-1)
+
+    # We construct our senders and receiver indexes.
+    senders = np.repeat(np.arange(num_positions), list(num_neighbors_per_position))  # type: ignore
+    receivers_img_torch = torch.tensor(receivers_imgs, device=positions.device)
+    # Map back to indexes on the central image.
+    receivers = receivers_img_torch % num_positions
+    senders_torch = torch.tensor(senders, device=positions.device)
+
+    # Finally compute the vector displacements between senders and receivers.
+    vectors = supercell_positions[receivers_img_torch] - positions[senders_torch]
+    return torch.stack((senders_torch, receivers), dim=0), vectors
 
 def compute_pbc_radius_graph(
     *,
@@ -232,54 +286,4 @@ def compute_pbc_radius_graph(
         return stacked, vectors
 
     else:
-        # Build a KDTree from the supercell positions.
-        # Query that KDTree just for the positions in the central cell.
-        tree_data = supercell_positions.clone().detach().cpu().numpy()
-        tree_query = positions.clone().detach().cpu().numpy()
-        distance_upper_bound = np.array(radius) + 1e-8
-        if library == "scipy":
-            tree = SciKDTree(tree_data, leafsize=100)
-            _, nearest_img_neighbors = tree.query(
-                tree_query,
-                max_number_neighbors + 1,
-                distance_upper_bound=distance_upper_bound,
-                workers=n_workers,
-                p=2,
-            )
-            # Remove the self-edge that will be closest
-            index_array = np.array(nearest_img_neighbors)[:, 1:]  # type: ignore
-            # Remove any entry that equals len(supercell_positions), which are negative hits
-            receivers_imgs = index_array[index_array != len(supercell_positions)]
-            num_neighbors_per_position = (index_array != len(supercell_positions)).sum(
-                -1
-            )
-        elif library == "pynanoflann":
-            tree = NanoKDTree(
-                n_neighbors=min(max_number_neighbors + 1, len(supercell_positions)),
-                radius=radius,
-                leaf_size=100,
-                metric="l2",
-            )
-            tree.fit(tree_data)
-            distance_values, nearest_img_neighbors = tree.kneighbors(
-                tree_query, n_jobs=n_workers
-            )
-            nearest_img_neighbors = nearest_img_neighbors.astype(np.int32)  # type: ignore
-
-            # remove the self node which will be closest
-            index_array = nearest_img_neighbors[:, 1:]
-            # remove distances greater than radius
-            within_radius = distance_values[:, 1:] < (radius + 1e-6)
-            receivers_imgs = index_array[within_radius]
-            num_neighbors_per_position = within_radius.sum(-1)
-
-        # We construct our senders and receiver indexes.
-        senders = np.repeat(np.arange(num_positions), list(num_neighbors_per_position))  # type: ignore
-        receivers_img_torch = torch.tensor(receivers_imgs, device=positions.device)
-        # Map back to indexes on the central image.
-        receivers = receivers_img_torch % num_positions
-        senders_torch = torch.tensor(senders, device=positions.device)
-
-        # Finally compute the vector displacements between senders and receivers.
-        vectors = supercell_positions[receivers_img_torch] - positions[senders_torch]
-        return torch.stack((senders_torch, receivers), dim=0), vectors
+        return positions_to_graph(supercell_positions, positions, radius, max_number_neighbors, library, n_workers)
