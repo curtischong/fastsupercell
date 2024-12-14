@@ -7,8 +7,8 @@ import os
 class Configuration:
     # fields with a prefix "prev_" are the real target value. These are optional since during inference, we don't know them
     atomic_numbers: np.ndarray  # this is a list of atomic numbers. NOT one-hot-encoded
-    X0: np.ndarray
-    L0: np.ndarray
+    frac_coord: np.ndarray
+    lattice: np.ndarray
 
 
 def load_data(filepath: str):
@@ -34,8 +34,8 @@ def load_dataset(file_path) -> list[Configuration]:
         end = start + num_atoms[i]
         config = Configuration(
             atomic_numbers=atomic_numbers[start:end],
-            X0=frac_x[start:end],
-            L0=lattice[i],
+            frac_coord=frac_x[start:end],
+            lattice=lattice[i],
         )
         dataset.append(config)
     return dataset
