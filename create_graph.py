@@ -1,5 +1,5 @@
 import torch
-from types import Union, Optional, Tuple
+from typing import Union, Optional, Tuple
 import numpy as np
 from scipy.spatial import KDTree as SciKDTree
 from pynanoflann import KDTree as NanoKDTree
