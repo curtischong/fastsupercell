@@ -75,7 +75,7 @@ def plot_edges(fig, edges, color):
         )
 
 
-def plot_with_parallelopied(fig, L):
+def plot_with_parallelopied(fig, L, color="#0d5d85"):
     v1 = L[0]
     v2 = L[1]
     v3 = L[2]
@@ -98,6 +98,6 @@ def plot_with_parallelopied(fig, L):
         (tuple(points[3]), tuple(points[7])),
     ]
     # Plot the edges using the helper function
-    plot_edges(fig, edges, "#0d5d85")
+    plot_edges(fig, edges, color)
 
     return points

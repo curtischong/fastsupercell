@@ -20,6 +20,15 @@
             "console": "integratedTerminal",
             "python": "${workspaceFolder}/venv/bin/python", // Adjust the path if your venv is located elsewhere
             "justMyCode": false
+        },
+        {
+            "name": "vis",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/transform_pbc.py",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/venv/bin/python", // Adjust the path if your venv is located elsewhere
+            "justMyCode": false
         }
     ]
 }

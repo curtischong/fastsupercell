@@ -34,9 +34,11 @@ def normal_vectors(lattice):
 def extend_lattice(lattice, radius):
     lengths = torch.linalg.norm(lattice, axis=1)
     unit_vectors = lattice / lengths[:, None]
-    extended_lattice = lattice + radius * unit_vectors
-    extended_lattice = extended_lattice - (radius * unit_vectors//2)
-    return extended_lattice
+
+    additional_lengths = (radius * unit_vectors)
+    extended_lattice = lattice + additional_lengths
+    position_offset = -additional_lengths/2
+    return extended_lattice, position_offset
 
 def fast(*, lattice: torch.Tensor, frac_coord: torch.Tensor, radius: int = 5, max_number_neighbors: int, knn_library: str, n_workers: int = 1):
     cart_coords = frac_coord @ lattice
@@ -53,7 +55,7 @@ def fast(*, lattice: torch.Tensor, frac_coord: torch.Tensor, radius: int = 5, ma
     supercell2_positions = torch.masked_select(supercell_positions, lattice2_mask.unsqueeze(-1))
 
 
-    # return positions_to_graph(supercell2_positions, positions=cart_coords, radius=radius, max_number_neighbors=max_number_neighbors, library=knn_library, n_workers=n_workers)
+    return positions_to_graph(supercell2_positions, positions=cart_coords, radius=radius, max_number_neighbors=max_number_neighbors, library=knn_library, n_workers=n_workers)
 
 def masked_positions_to_graph(supercell_positions, positions, radius, max_number_neighbors, knn_library, n_workers):
     tree_data = supercell_positions.clone().detach().cpu().numpy()
