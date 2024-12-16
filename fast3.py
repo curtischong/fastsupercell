@@ -71,9 +71,9 @@ def create_mask(frac_coords: torch.Tensor, radius: torch.Tensor, lattice: torch.
                 offset_c = offset[c]
                 cutoff_norm_amount = inverted_normal_norms[c]
                 if offset_c < 0:
-                    is_in_range = is_in_range and frac_coord[c] > 1 - cutoff_norm_amount
+                    is_in_range = is_in_range and frac_coord[c] >= 1 - cutoff_norm_amount
                 elif offset_c > 0:
-                    is_in_range = is_in_range and frac_coord[c] < cutoff_norm_amount
+                    is_in_range = is_in_range and frac_coord[c] <= cutoff_norm_amount
 
             masked_coords[b][a] = is_in_range
     return masked_coords
