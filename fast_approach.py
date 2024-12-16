@@ -41,6 +41,16 @@ def extend_lattice(lattice, radius):
     position_offset = torch.sum(-additional_lengths/2, dim=0) # dim=0 cause we want to sum up all the contributions along the x-axis (for example)
     return extended_lattice, position_offset
 
+def extend_lattice2(lattice, radius):
+    lengths = torch.linalg.norm(lattice, axis=1)
+    unit_vectors = lattice / lengths[:, None]
+
+    additional_lengths = (radius * unit_vectors)
+    extended_lattice = lattice + additional_lengths
+    position_offset = torch.sum(-additional_lengths/2, dim=0) # dim=0 cause we want to sum up all the contributions along the x-axis (for example)
+    return extended_lattice, position_offset
+
+
 def fast(*, lattice: torch.Tensor, frac_coord: torch.Tensor, radius: int = 5, max_number_neighbors: int, knn_library: str, n_workers: int = 1):
 
     frac_coord = frac_coord
