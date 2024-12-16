@@ -21,7 +21,7 @@ def vis_points_masked_by_scaled_lattice():
     frac_coord = material.frac_coord
     cart_coord = frac_coord @ lattice
 
-    radius = 3.0
+    radius = 0.5
 
     cart_supercell_coords = _compute_img_positions_torch(torch.from_numpy(frac_coord), lattice_torch)
     cart_supercell_coords = cart_supercell_coords.reshape(-1, 3)

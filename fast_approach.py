@@ -42,25 +42,26 @@ def extend_lattice(lattice, radius):
     return extended_lattice, position_offset
 
 def fast(*, lattice: torch.Tensor, frac_coord: torch.Tensor, radius: int = 5, max_number_neighbors: int, knn_library: str, n_workers: int = 1):
-    cart_coords = frac_coord @ lattice
 
-    # radius_for_side
-    supercell_positions = _compute_img_positions_torch(
-        positions=cart_coords, periodic_boundaries=lattice
-    )
+    frac_coord = frac_coord
+    cart_coord = frac_coord @ lattice
 
-    num_positions = len(cart_coords)
+    cart_supercell_coords = _compute_img_positions_torch(frac_coord, lattice)
+    cart_supercell_coords = cart_supercell_coords.reshape(-1, 3)
+
+    extended_lattice, position_offset = extend_lattice(lattice, radius)
+
+    lattice2_mask = points_in_parallelepiped(extended_lattice, position_offset, cart_supercell_coords)
+    supercell2_positions = torch.masked_select(cart_supercell_coords, lattice2_mask.unsqueeze(-1)) # these are the relevant positions of the supercell (the ones closest to the lattice)
+
+    num_positions = len(cart_coord)
     node_id = torch.arange(num_positions).unsqueeze(-1).expand(num_positions, NUM_OFFSETS)
 
-    lattice2, lattice2_offset = extend_lattice(lattice, radius)
-
     # the simplest way: just make a larger parallelepiped, then cross product each point with the larger parallelpied, and keep the points with a smaller cross product
-    lattice2_mask = points_in_parallelepiped(lattice2, lattice2_offset, supercell_positions)
-    supercell2_positions = torch.masked_select(supercell_positions, lattice2_mask.unsqueeze(-1))
-    node_id2 = torch.masked_select(node_id, lattice2_mask)
+    node_id2 = torch.masked_select(node_id.reshape(-1), lattice2_mask)
 
 
-    return masked_positions_to_graph(supercell2_positions.reshape(-1, 3), positions=cart_coords, node_id2=node_id2, radius=radius, max_number_neighbors=max_number_neighbors, n_workers=n_workers)
+    return masked_positions_to_graph(supercell2_positions.reshape(-1, 3), positions=cart_coord, node_id2=node_id2, radius=radius, max_number_neighbors=max_number_neighbors, n_workers=n_workers)
 
 
 def masked_positions_to_graph(supercell_positions, positions, node_id2, radius, max_number_neighbors, n_workers):
