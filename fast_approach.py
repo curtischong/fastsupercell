@@ -38,7 +38,7 @@ def extend_lattice(lattice, radius):
 
     additional_lengths = (radius * unit_vectors)
     extended_lattice = lattice + additional_lengths
-    position_offset = -additional_lengths/2
+    position_offset = torch.sum(-additional_lengths/2, dim=0) # dim=0 cause we want to sum up all the contributions along the x-axis (for example)
     return extended_lattice, position_offset
 
 def fast(*, lattice: torch.Tensor, frac_coord: torch.Tensor, radius: int = 5, max_number_neighbors: int, knn_library: str, n_workers: int = 1):
@@ -55,7 +55,7 @@ def fast(*, lattice: torch.Tensor, frac_coord: torch.Tensor, radius: int = 5, ma
     lattice2, lattice2_offset = extend_lattice(lattice, radius)
 
     # the simplest way: just make a larger parallelepiped, then cross product each point with the larger parallelpied, and keep the points with a smaller cross product
-    lattice2_mask = points_in_parallelepiped(lattice2 + lattice2_offset, supercell_positions)
+    lattice2_mask = points_in_parallelepiped(lattice2, lattice2_offset, supercell_positions)
     supercell2_positions = torch.masked_select(supercell_positions, lattice2_mask.unsqueeze(-1))
     node_id2 = torch.masked_select(node_id, lattice2_mask)
 

@@ -48,65 +48,77 @@ def get_device(
     return torch.device(requested_device)
 
 
-def points_in_parallelepiped(lattice: torch.Tensor, positions: torch.Tensor, tol=1e-12):
+def points_in_parallelepiped(
+    lattice: torch.Tensor, 
+    lattice2_offset: torch.Tensor, 
+    positions: torch.Tensor, 
+    tol=1e-12
+):
     """
-    Check which positions lie inside the parallelepiped defined by the lattice vectors using PyTorch tensors.
-    
+    Check which positions lie inside the parallelepiped defined by the lattice vectors,
+    taking into account an additional offset.
+
     Parameters
     ----------
     lattice : torch.Tensor of shape (3, 3)
         The lattice vectors defining the parallelepiped. 
         For example, lattice[0] = a, lattice[1] = b, lattice[2] = c.
+    lattice2_offset : torch.Tensor of shape (3,)
+        The translation offset to be applied to the parallelepiped.
     positions : torch.Tensor of shape (num_particles, 3)
         The positions of particles to test.
-    tol : float
+    tol : float, optional
         Tolerance for numerical comparisons.
-        
+
     Returns
     -------
     inside_mask : torch.BoolTensor of shape (num_particles,)
         Boolean tensor where True indicates the corresponding particle 
-        is inside or on the boundary of the parallelepiped.
+        is inside or on the boundary of the shifted parallelepiped.
     """
+
     # Ensure inputs are in floating point format
     lattice = lattice.to(torch.float64)
+    lattice2_offset = lattice2_offset.to(torch.float64)
     positions = positions.to(torch.float64)
-    
+
+    # Adjust positions by subtracting the offset so that
+    # we can treat this as a standard parallelepiped check
+    shifted_positions = positions - lattice2_offset
+
     # Extract lattice vectors
     a = lattice[0]
     b = lattice[1]
     c = lattice[2]
-    
+
     # Compute volume: V = a · (b × c)
-    bc_cross = torch.cross(b, c)
+    bc_cross = torch.cross(b, c, dim=0)
     V = torch.dot(a, bc_cross)
-    
+
     # If volume ~ 0, we have a degenerate parallelepiped
     if torch.abs(V) < tol:
         # No points are considered inside in a degenerate case
         return torch.zeros(positions.shape[0], dtype=torch.bool)
-    
-    # Precompute the other cross products
-    ca_cross = torch.cross(c, a)
-    ab_cross = torch.cross(a, b)
-    
-    # Compute u, v, w for each position
-    # u = (P · (b × c)) / V
-    # v = (P · (c × a)) / V
-    # w = (P · (a × b)) / V
 
-    # Vectorized computations
-    u_values = (positions @ bc_cross) / V
-    v_values = (positions @ ca_cross) / V
-    w_values = (positions @ ab_cross) / V
-    
+    # Precompute the other cross products
+    ca_cross = torch.cross(c, a, dim=0)
+    ab_cross = torch.cross(a, b, dim=0)
+
+    # Compute u, v, w for each shifted position
+    # u = ((P - offset) · (b × c)) / V
+    # v = ((P - offset) · (c × a)) / V
+    # w = ((P - offset) · (a × b)) / V
+    u_values = (shifted_positions @ bc_cross) / V
+    v_values = (shifted_positions @ ca_cross) / V
+    w_values = (shifted_positions @ ab_cross) / V
+
     # Check if each of u, v, w are in [0,1] within tolerance
     inside_mask = (
-        (u_values >= -tol) & (u_values <= 1+tol) &
-        (v_values >= -tol) & (v_values <= 1+tol) &
-        (w_values >= -tol) & (w_values <= 1+tol)
+        (u_values >= -tol) & (u_values <= 1 + tol) &
+        (v_values >= -tol) & (v_values <= 1 + tol) &
+        (w_values >= -tol) & (w_values <= 1 + tol)
     )
-    
+
     return inside_mask
 
 def _compute_img_positions_torch(
