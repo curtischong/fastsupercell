@@ -25,7 +25,7 @@
             "name": "vis",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/transform_pbc.py",
+            "program": "${workspaceFolder}/vis_testing.py",
             "console": "integratedTerminal",
             "python": "${workspaceFolder}/venv/bin/python", // Adjust the path if your venv is located elsewhere
             "justMyCode": false

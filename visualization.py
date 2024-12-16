@@ -35,12 +35,10 @@ def plot_3d_coords(coords: np.ndarray, title="3D Coordinates Plot"):
     ax.legend()
     plt.show()
 
-def visualize_lattice(lattice: np.ndarray):
+def visualize_lattice(lattice: np.ndarray, translation=None):
     # Create a Plotly figure
     fig = go.Figure()
-    points = plot_with_parallelopied(fig, lattice)
-    smallest = np.min(points, axis=0)
-    largest = np.max(points, axis=0)
+    points = plot_with_parallelopied(fig, lattice, translation)
 
     # Set the layout for the 3D plot
     fig.update_layout(
@@ -51,13 +49,6 @@ def visualize_lattice(lattice: np.ndarray):
             zaxis_title="Z",
         ),
         margin=dict(l=0, r=0, b=0, t=0),
-    )
-    fig.update_layout(
-        scene=dict(
-            xaxis=dict(range=[smallest[0], largest[0]]),
-            yaxis=dict(range=[smallest[1], largest[1]]),
-            zaxis=dict(range=[smallest[2], largest[2]]),
-        )
     )
     return fig
 
@@ -75,12 +66,14 @@ def plot_edges(fig, edges, color):
         )
 
 
-def plot_with_parallelopied(fig, L, color="#0d5d85"):
+def plot_with_parallelopied(fig, L, translation=None, color="#0d5d85"):
     v1 = L[0]
     v2 = L[1]
     v3 = L[2]
     # Create the parallelepiped by combining the basis vectors
     points = np.array([[0, 0, 0], v1, v1 + v2, v2, v3, v1 + v3, v1 + v2 + v3, v2 + v3])
+    if translation is not None:
+        points = points + translation
 
     # Create the edges of the parallelepiped as tuples of Cartesian coordinates
     edges = [
@@ -101,3 +94,16 @@ def plot_with_parallelopied(fig, L, color="#0d5d85"):
     plot_edges(fig, edges, color)
 
     return points
+
+def plot_points(fig, coords, color="#0d5d85"):
+    for coord in coords:
+        fig.add_trace(
+            go.Scatter3d(
+                x=[coord[0]],
+                y=[coord[1]],
+                z=[coord[2]],
+                mode="markers",
+                marker=dict(color=color, size=5),
+                showlegend=False,  # Do not add to the legend
+            )
+        )
