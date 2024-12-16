@@ -17,10 +17,12 @@ if __name__ == "__main__":
         print(f"lattice: {lattice}")
         print(f"atomic_numbers: {atomic_numbers}")
 
+        radius=1.0
+
         edges1, displacements1 = compute_pbc_radius_graph(
             positions=frac_coord,
             periodic_boundaries=lattice,
-            radius=1.0,
+            radius=radius,
             max_number_neighbors=20,
             brute_force=False,
             library=knn_library
@@ -29,7 +31,7 @@ if __name__ == "__main__":
         edges2, displacements2 = fast(
             lattice=lattice,
             frac_coord=frac_coord,
-            radius=1.0,
+            radius=radius,
             max_number_neighbors=20,
             knn_library=knn_library
         )
