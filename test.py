@@ -9,7 +9,7 @@ if __name__ == "__main__":
     knn_library = "pynanoflann"
     dataset = load_dataset("datasets/alexandria_hdf5/train_10.h5")
     print(dataset)
-    for config in dataset:
+    for config in dataset[1:2]:
         frac_coord = torch.tensor(config.frac_coord, dtype=torch.float32)
         lattice = torch.tensor(config.lattice, dtype=torch.float32)
         atomic_numbers = torch.tensor(config.atomic_numbers, dtype=torch.int64)
@@ -17,7 +17,7 @@ if __name__ == "__main__":
         print(f"lattice: {lattice}")
         print(f"atomic_numbers: {atomic_numbers}")
 
-        radius=1.0
+        radius=5.0
 
         edges1, displacements1 = compute_pbc_radius_graph(
             positions=frac_coord,
