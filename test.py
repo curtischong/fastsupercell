@@ -1,5 +1,6 @@
 import numpy as np
 from create_graph import compute_pbc_radius_graph
+from fast3 import fast3
 from fast_approach import fast
 from prep_datasets import load_dataset
 import torch
@@ -17,7 +18,7 @@ if __name__ == "__main__":
         print(f"lattice: {lattice}")
         print(f"atomic_numbers: {atomic_numbers}")
 
-        radius=5.0
+        radius=1.0
 
         edges1, displacements1 = compute_pbc_radius_graph(
             positions=frac_coord,
@@ -28,7 +29,7 @@ if __name__ == "__main__":
             library=knn_library
         )
 
-        edges2, displacements2 = fast(
+        edges2, displacements2 = fast3(
             lattice=lattice,
             frac_coord=frac_coord,
             radius=radius,

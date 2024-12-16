@@ -20,11 +20,9 @@ def create_mask(num_atoms: int, radius: torch.Tensor, lattice: torch.Tensor):
     for i in range(NUM_OFFSETS):
         offset = OFFSETS[i]
 
-        for j in range(3):
-            if lattice[j] == 0:
-                continue
-            radius_in_frac_amount = radius / lattice[j]
+        translated = lattice + offset
 
+        for j in range(3):
             offset_i = offset[j]
             if offset_i < 0:
                 coord_mul[i][j] = -1
