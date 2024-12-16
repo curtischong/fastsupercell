@@ -38,7 +38,7 @@ def plot_3d_coords(coords: np.ndarray, title="3D Coordinates Plot"):
 def visualize_lattice(lattice: np.ndarray, translation=None):
     # Create a Plotly figure
     fig = go.Figure()
-    points = plot_with_parallelopied(fig, lattice, translation)
+    points = plot_with_parallelepiped(fig, lattice, translation)
 
     # Set the layout for the 3D plot
     fig.update_layout(
@@ -66,7 +66,7 @@ def plot_edges(fig, edges, color):
         )
 
 
-def plot_with_parallelopied(fig, L, translation=None, color="#0d5d85"):
+def plot_with_parallelepiped(fig, L, translation=None, color="#0d5d85"):
     v1 = L[0]
     v2 = L[1]
     v3 = L[2]

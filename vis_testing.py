@@ -2,7 +2,7 @@ import torch
 from create_graph import _compute_img_positions_torch, points_in_parallelepiped
 from fast_approach import extend_lattice
 from test import load_dataset
-from visualization import  plot_points, plot_with_parallelopied, visualize_lattice
+from visualization import  plot_points, plot_with_parallelepiped, visualize_lattice
 
 
 def vis_scaled_lattice():
@@ -10,7 +10,7 @@ def vis_scaled_lattice():
     lattice = dataset[0].lattice
     extended_lattice, position_offset = extend_lattice(torch.Tensor(lattice), 3.0)
     fig = visualize_lattice(extended_lattice) # show the extended lattice first since it's larger and will scale the fig properly
-    plot_with_parallelopied(fig, lattice, color="#ff0000")
+    plot_with_parallelepiped(fig, lattice, color="#ff0000")
     fig.show()
 
 def vis_points_masked_by_scaled_lattice():
@@ -31,7 +31,7 @@ def vis_points_masked_by_scaled_lattice():
 
     # 1 plot the parallelepipeds
     fig = visualize_lattice(extended_lattice, position_offset.numpy()) # show the extended lattice first since it's larger and will scale the fig properly
-    plot_with_parallelopied(fig, lattice, color="#ff0000")
+    plot_with_parallelepiped(fig, lattice, color="#ff0000")
 
     # 2 plot the points
     plot_points(fig, cart_supercell_coords)
