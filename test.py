@@ -39,7 +39,6 @@ if __name__ == "__main__":
     torch.set_printoptions(sci_mode=False)  # Disable scientific notation
     knn_library = "pynanoflann"
     dataset = load_dataset("datasets/alexandria_hdf5/train_10.h5")
-    # print(dataset)
     for i, config in enumerate(dataset):
         frac_coord = torch.tensor(config.frac_coord, dtype=torch.float32)
         lattice = torch.tensor(config.lattice, dtype=torch.float32)
@@ -50,7 +49,6 @@ if __name__ == "__main__":
         print(f"lattice: {lattice}")
         print(f"atomic_numbers: {atomic_numbers}")
 
-        # radius=3.5
         radius=5
 
         edges1, displacements1 = compute_pbc_radius_graph(
