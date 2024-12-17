@@ -51,9 +51,9 @@ def compute_normals(lattice: torch.Tensor, radius: int):
     c = lattice[2]
 
     # Compute the normals using cross products
-    n_a = torch.cross(b, c)  # normal to plane defined by b and c
-    n_b = torch.cross(c, a)  # normal to plane defined by c and a
-    n_c = torch.cross(a, b)  # normal to plane defined by a and b
+    n_a = torch.linalg.cross(b, c)  # normal to plane defined by b and c
+    n_b = torch.linalg.cross(c, a)  # normal to plane defined by c and a
+    n_c = torch.linalg.cross(a, b)  # normal to plane defined by a and b
 
     # Stack the normals into a single tensor
     normals = torch.stack([n_a, n_b, n_c], dim=0)
