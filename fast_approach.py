@@ -56,7 +56,7 @@ def fast(*, lattice: torch.Tensor, frac_coord: torch.Tensor, radius: int = 5, ma
     frac_coord = frac_coord
     cart_coord = frac_coord @ lattice
 
-    cart_supercell_coords = _compute_img_positions_torch(frac_coord, lattice)
+    cart_supercell_coords = _compute_img_positions_torch(cart_coord, lattice)
     cart_supercell_coords = cart_supercell_coords.reshape(-1, 3)
 
     extended_lattice, position_offset = extend_lattice(lattice, radius)

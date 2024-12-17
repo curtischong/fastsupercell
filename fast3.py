@@ -83,7 +83,7 @@ def fast3(*, lattice: torch.Tensor, frac_coord: torch.Tensor, radius: int = 5, m
     frac_coord = frac_coord
     cart_coord = frac_coord @ lattice
 
-    cart_supercell_coords = _compute_img_positions_torch(frac_coord, lattice)
+    cart_supercell_coords = _compute_img_positions_torch(cart_coord, lattice)
 
 
     masked_coords = create_mask(frac_coord, radius, lattice)
