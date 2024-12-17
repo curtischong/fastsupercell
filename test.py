@@ -60,9 +60,6 @@ if __name__ == "__main__":
 
         cart_coord = frac_coord @ lattice
         atomic_numbers = torch.tensor(config.atomic_numbers, dtype=torch.int64)
-        # print(f"frac_coord: {frac_coord}")
-        # print(f"lattice: {lattice}")
-        # print(f"atomic_numbers: {atomic_numbers}")
 
         radius=5
 
