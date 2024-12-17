@@ -13,8 +13,10 @@ def edges_to_tuples(edges, displacements):
     for i in range(edges.shape[1]):
         edge = edgest[i]
         displacement = displacements[i]
-        # tuples.append((edge[0].item(), edge[1].item(), displacement[0].item(), displacement[1].item(), displacement[2].item()))
-        tuples.append((displacement[0].item(), displacement[1].item(), displacement[2].item()))
+        tuples.append((edge[0].item(), edge[1].item(), displacement[0].item(), displacement[1].item(), displacement[2].item()))
+        # one bug that happened was that I noticed that the displacements WERE THE SAME between my implementation and the orb implementation
+        # it meant that I got the distances right. I just mapped the wrong node IDs. So I did this to verify that only the node IDs were wrong (using the below code passed the test!):
+        # tuples.append((displacement[0].item(), displacement[1].item(), displacement[2].item()))
     return sorted(tuples)
 
 def graphs_are_equal(edges1, edges2, displacements1, displacements2):

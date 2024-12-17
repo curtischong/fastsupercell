@@ -93,7 +93,7 @@ def fast4(*, lattice: torch.Tensor, frac_coord: torch.Tensor, radius: int = 5, m
     supercell2_positions = torch.masked_select(cart_supercell_coords, lattice2_mask.unsqueeze(-1)) # these are the relevant positions of the supercell (the ones closest to the lattice)
 
     num_positions = len(cart_coord)
-    node_id = torch.arange(num_positions).unsqueeze(-1).expand(num_positions, NUM_OFFSETS)
+    node_id = torch.arange(num_positions).unsqueeze(-1).expand(num_positions, NUM_OFFSETS).transpose(0, 1)
     node_id2 = torch.masked_select(node_id.reshape(-1), lattice2_mask)
 
 
