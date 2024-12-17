@@ -6,6 +6,22 @@ from fast_approach import fast
 from prep_datasets import load_dataset
 import torch
 
+def edges_to_tuples(edges, displacements):
+    assert edges.shape[1] == displacements.shape[0]
+    tuples = []
+    for i in range(len(edges)):
+        edge = edges[i]
+        displacement = displacements[i]
+        tuples.append((edge[0], edge[1], displacement)) # TODO: make displacement a tuple so we can compare (and sort it)
+    return sorted(tuples)
+
+def graphs_are_equal(edges1, edges2, displacements1, displacements2):
+    assert edges1.shape == edges2.shape
+    tuples1 = edges_to_tuples(edges1, displacements1)
+    tuples2 = edges_to_tuples(edges2, displacements2)
+    for tuple1, tuple2 in zip(tuples1, tuples2):
+        assert tuple1[0] == tuple2[0] and tuple1[1] == tuple2[1] and torch.allclose(tuple1[2], tuple2[2]), f"{tuple1} != {tuple2}"
+
 
 if __name__ == "__main__":
     knn_library = "pynanoflann"
@@ -19,7 +35,7 @@ if __name__ == "__main__":
         print(f"lattice: {lattice}")
         print(f"atomic_numbers: {atomic_numbers}")
 
-        radius=1.0
+        radius=10.0
 
         edges1, displacements1 = compute_pbc_radius_graph(
             positions=frac_coord,
@@ -38,9 +54,6 @@ if __name__ == "__main__":
             knn_library=knn_library
         )
 
-        # assert edges and displacements are the same
-        assert edges1.shape == edges2.shape
-        assert np.allclose(edges1, edges2)
-        assert np.allclose(displacements1, displacements2)
+        graphs_are_equal(edges1, edges2, displacements1, displacements2)
         print(f"success: {i}")
-    print("we can caculate the graph properly!")
+    print("we can calculate the graph properly!")

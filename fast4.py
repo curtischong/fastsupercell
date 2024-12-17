@@ -92,8 +92,6 @@ def fast4(*, lattice: torch.Tensor, frac_coord: torch.Tensor, radius: int = 5, m
 
     num_positions = len(cart_coord)
     node_id = torch.arange(num_positions).unsqueeze(-1).expand(num_positions, NUM_OFFSETS)
-
-    # the simplest way: just make a larger parallelepiped, then cross product each point with the larger parallelpied, and keep the points with a smaller cross product
     node_id2 = torch.masked_select(node_id.reshape(-1), lattice2_mask)
 
 

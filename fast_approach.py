@@ -51,7 +51,7 @@ def extend_lattice2(lattice, radius):
     return extended_lattice, position_offset
 
 
-def fast(*, lattice: torch.Tensor, frac_coord: torch.Tensor, radius: int = 5, max_number_neighbors: int, knn_library: str, n_workers: int = 1):
+def fast(*, lattice: torch.Tensor, frac_coord: torch.Tensor, radius: int, max_number_neighbors: int, knn_library: str, n_workers: int = 1):
 
     frac_coord = frac_coord
     cart_coord = frac_coord @ lattice

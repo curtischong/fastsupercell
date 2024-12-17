@@ -22,7 +22,7 @@ def vis_points_masked_by_scaled_lattice():
     frac_coord = material.frac_coord
     cart_coord = frac_coord @ lattice
 
-    radius = 1 # at this radius, there are points that are OUTSIDE the allowed parallelepiped area: e.g. one atom is 3.906957126077915 away from the origin, and is OUTSIDE the parallelepiped
+    radius = 1.1 # at this radius, there are points that are OUTSIDE the allowed parallelepiped area: e.g. one atom is 3.906957126077915 away from the origin, and is OUTSIDE the parallelepiped
 
     cart_supercell_coords = _compute_img_positions_torch(torch.from_numpy(cart_coord), lattice_torch)
     cart_supercell_coords = cart_supercell_coords.reshape(-1, 3)
