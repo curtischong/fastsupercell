@@ -17,57 +17,82 @@ from scipy.spatial import KDTree as SciKDTree
 
 # https://shad.io/MatVis/
 
-def normal_vectors(lattice):
+def compute_normals(lattice: torch.Tensor, radius: int):
     """
-    Given a 3x3 lattice matrix (rows are vectors a, b, c),
-    return the normal vectors to each plane.
+    Compute the normal vectors to the three lattice planes defined
+    by a set of three lattice vectors.
+
+    Parameters
+    ----------
+    lattice : torch.Tensor
+        A 3x3 tensor representing three lattice vectors.
+        By convention, we assume each row of 'lattice' is one lattice vector.
+        For example:
+        lattice = torch.tensor([
+            [a_x, a_y, a_z],
+            [b_x, b_y, b_z],
+            [c_x, c_y, c_z]
+        ], dtype=torch.float)
+
+    Returns
+    -------
+    normals : torch.Tensor
+        A 3x3 tensor where each row is a normal vector corresponding
+        to the plane formed by the other two lattice vectors.
+        Specifically, the returned tensor has:
+        normals[0] = b × c
+        normals[1] = c × a
+        normals[2] = a × b
     """
+
+    # Extract the lattice vectors a, b, c
     a = lattice[0]
     b = lattice[1]
     c = lattice[2]
 
-    n_a = np.cross(b, c)  # normal to face opposite a
-    n_b = np.cross(c, a)  # normal to face opposite b
-    n_c = np.cross(a, b)  # normal to face opposite c
+    # Compute the normals using cross products
+    n_a = torch.cross(b, c)  # normal to plane defined by b and c
+    n_b = torch.cross(c, a)  # normal to plane defined by c and a
+    n_c = torch.cross(a, b)  # normal to plane defined by a and b
 
-    return n_a, -n_a, n_b, -n_b, n_c, -n_c
+    # Stack the normals into a single tensor
+    normals = torch.stack([n_a, n_b, n_c], dim=0)
 
-def extend_lattice(lattice, radius):
-    lengths = torch.linalg.norm(lattice, axis=1)
-    unit_vectors = lattice / lengths[:, None]
+    # normalize so it's all of length radius
+    normals /= torch.linalg.norm(normals, dim=1)
+    normals *= radius
 
-    additional_lengths = (radius * unit_vectors)
-    extended_lattice = lattice + additional_lengths
+    return normals
+
+def extend_lattice4(lattice: torch.Tensor, radius: int):
+    normals = compute_normals(lattice, radius)
+    inverse_lattice = torch.linalg.inv(lattice)
+    inverted_normals = normals @ inverse_lattice
+    inverted_normals_norms = torch.linalg.norm(inverted_normals, dim=1)
+
+    extended_cube = torch.ones(3) + 2*inverted_normals_norms
+
+    extended_lattice = lattice * extended_cube 
+    additional_lengths = extended_lattice - lattice
     position_offset = torch.sum(-additional_lengths/2, dim=0) # dim=0 cause we want to sum up all the contributions along the x-axis (for example)
     return extended_lattice, position_offset
 
-def extend_lattice2(lattice, radius):
-    lengths = torch.linalg.norm(lattice, axis=1)
-    unit_vectors = lattice / lengths[:, None]
-
-    additional_lengths = (radius * unit_vectors)
-    extended_lattice = lattice + additional_lengths
-    position_offset = torch.sum(-additional_lengths/2, dim=0) # dim=0 cause we want to sum up all the contributions along the x-axis (for example)
-    return extended_lattice, position_offset
-
-
-def fast(*, lattice: torch.Tensor, frac_coord: torch.Tensor, radius: int, max_number_neighbors: int, knn_library: str, n_workers: int = 1):
+def fast4(*, lattice: torch.Tensor, frac_coord: torch.Tensor, radius: int = 5, max_number_neighbors: int, knn_library: str, n_workers: int = 1):
 
     frac_coord = frac_coord
     cart_coord = frac_coord @ lattice
 
     cart_supercell_coords = _compute_img_positions_torch(cart_coord, lattice)
+    cart_supercell_coords = cart_supercell_coords.transpose(0, 1)
     cart_supercell_coords = cart_supercell_coords.reshape(-1, 3)
 
-    extended_lattice, position_offset = extend_lattice(lattice, radius)
+    extended_lattice, position_offset = extend_lattice4(lattice, radius)
 
     lattice2_mask = points_in_parallelepiped(extended_lattice, position_offset, cart_supercell_coords)
     supercell2_positions = torch.masked_select(cart_supercell_coords, lattice2_mask.unsqueeze(-1)) # these are the relevant positions of the supercell (the ones closest to the lattice)
 
     num_positions = len(cart_coord)
-    node_id = torch.arange(num_positions).unsqueeze(-1).expand(num_positions, NUM_OFFSETS)
-
-    # the simplest way: just make a larger parallelepiped, then cross product each point with the larger parallelpied, and keep the points with a smaller cross product
+    node_id = torch.arange(num_positions).unsqueeze(-1).expand(num_positions, NUM_OFFSETS).transpose(0, 1)
     node_id2 = torch.masked_select(node_id.reshape(-1), lattice2_mask)
 
 
@@ -109,25 +134,3 @@ def masked_positions_to_graph(supercell_positions, positions, node_id2, radius, 
     # Finally compute the vector displacements between senders and receivers.
     vectors = supercell_positions[receivers_img_torch] - positions[senders_torch]
     return torch.stack((senders_torch, receivers), dim=0), vectors
-
-# strat:
-    # 1. use knn and get all the edges without PBC
-    # 2. manually match each of the faces with each other. the nodes can only connect to the other nodes on the other side of the plane
-
-    # how do I do this?
-    # we can just create a knn for each node
-    # screw it. I feel like the supercell appraoch is still the best cause we can ues the knn logic
-
-    # is it faster to create the 27 cube. or we just append extra nodes?
-
-
-    # in the original euclidiean cube, we find all the nodes that are near the face.
-    # then we just add it to the coords later. finally we use the kd tree
-
-    # in general, I think that drastically reducing the number of nodes is best.
-
-
-    # how do I know the radius for the face?
-
-
-    # we don't even need tod do the transofrmation. we can just slide the lattice plane and remove coords that fall outside the plane (after we get the suepercells)

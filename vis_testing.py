@@ -1,5 +1,6 @@
 import torch
 from create_graph import _compute_img_positions_torch, points_in_parallelepiped
+from fast4 import extend_lattice4
 from fast_approach import extend_lattice
 from test import load_dataset
 from visualization import  plot_points, plot_with_parallelepiped, visualize_lattice
@@ -15,23 +16,25 @@ def vis_scaled_lattice():
 
 def vis_points_masked_by_scaled_lattice():
     dataset = load_dataset("datasets/alexandria_hdf5/train_10.h5")
-    material = dataset[1]
+    material = dataset[0]
     lattice = material.lattice
     lattice_torch = torch.from_numpy(lattice)
     frac_coord = material.frac_coord
     cart_coord = frac_coord @ lattice
 
-    radius = 5 # at this radius, there are points that are OUTSIDE the allowed parallelepiped area: e.g. one atom is 3.906957126077915 away from the origin, and is OUTSIDE the parallelepiped
+    radius = 1.1 # at this radius, there are points that are OUTSIDE the allowed parallelepiped area: e.g. one atom is 3.906957126077915 away from the origin, and is OUTSIDE the parallelepiped
 
-    cart_supercell_coords = _compute_img_positions_torch(torch.from_numpy(frac_coord), lattice_torch)
+    cart_supercell_coords = _compute_img_positions_torch(torch.from_numpy(cart_coord), lattice_torch)
     cart_supercell_coords = cart_supercell_coords.reshape(-1, 3)
     # cart_supercell_coords = supercell_coords @ lattice
 
-    extended_lattice, position_offset = extend_lattice(lattice_torch, radius)
+    # extended_lattice1, position_offset1 = extend_lattice(lattice_torch, radius)
+    extended_lattice, position_offset = extend_lattice4(lattice_torch, radius)
 
     # 1 plot the parallelepipeds
     fig = visualize_lattice(extended_lattice, position_offset.numpy()) # show the extended lattice first since it's larger and will scale the fig properly
     plot_with_parallelepiped(fig, lattice, color="#ff0000")
+    # plot_with_parallelepiped(fig, extended_lattice1, translation=position_offset1.numpy(), color="#00ff00")
 
     # 2 plot the points
     plot_points(fig, cart_supercell_coords)
