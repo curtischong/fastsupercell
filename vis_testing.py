@@ -28,12 +28,13 @@ def vis_points_masked_by_scaled_lattice():
     cart_supercell_coords = cart_supercell_coords.reshape(-1, 3)
     # cart_supercell_coords = supercell_coords @ lattice
 
-    # extended_lattice, position_offset = extend_lattice(lattice_torch, radius)
+    extended_lattice1, position_offset1 = extend_lattice(lattice_torch, radius)
     extended_lattice, position_offset = extend_lattice4(lattice_torch, radius)
 
     # 1 plot the parallelepipeds
     fig = visualize_lattice(extended_lattice, position_offset.numpy()) # show the extended lattice first since it's larger and will scale the fig properly
     plot_with_parallelepiped(fig, lattice, color="#ff0000")
+    plot_with_parallelepiped(fig, extended_lattice1, translation=position_offset1.numpy(), color="#00ff00")
 
     # 2 plot the points
     plot_points(fig, cart_supercell_coords)
