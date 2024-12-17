@@ -59,7 +59,6 @@ if __name__ == "__main__":
         lattice = torch.tensor(config.lattice, dtype=torch.float32)
 
         cart_coord = frac_coord @ lattice
-        atomic_numbers = torch.tensor(config.atomic_numbers, dtype=torch.int64)
 
         radius=5
 
@@ -74,10 +73,9 @@ if __name__ == "__main__":
 
         edges2, displacements2 = fast4(
             lattice=lattice,
-            frac_coord=frac_coord,
+            cart_coord=cart_coord,
             radius=radius,
             max_number_neighbors=20,
-            knn_library=knn_library
         )
 
         err = graphs_are_equal(edges1, edges2, displacements1, displacements2, i)

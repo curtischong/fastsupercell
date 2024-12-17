@@ -77,10 +77,7 @@ def extend_lattice4(lattice: torch.Tensor, radius: int):
     position_offset = torch.sum(-additional_lengths/2, dim=0) # dim=0 cause we want to sum up all the contributions along the x-axis (for example)
     return extended_lattice, position_offset
 
-def fast4(*, lattice: torch.Tensor, frac_coord: torch.Tensor, radius: int = 5, max_number_neighbors: int, knn_library: str, n_workers: int = 1):
-
-    frac_coord = frac_coord
-    cart_coord = frac_coord @ lattice
+def fast4(*, lattice: torch.Tensor, cart_coord: torch.Tensor, radius: int = 5, max_number_neighbors: int, n_workers: int = 1):
 
     cart_supercell_coords = _compute_img_positions_torch(cart_coord, lattice)
     cart_supercell_coords = cart_supercell_coords.transpose(0, 1)
