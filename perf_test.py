@@ -1,12 +1,12 @@
 import torch
-from prep_datasets import load_dataset
+from prep_datasets import Configuration, load_dataset
 from create_graph import compute_pbc_radius_graph
 from fast4 import fast4
 import time
 
 
-def test_method():
-    for i, config in enumerate(dataset):
+def test_method(dataset: list[Configuration]):
+    for config in dataset:
         frac_coord = torch.tensor(config.frac_coord, dtype=torch.float32)
         lattice = torch.tensor(config.lattice, dtype=torch.float32)
 
@@ -17,13 +17,14 @@ if __name__ == "__main__":
     torch.set_printoptions(sci_mode=False)  # Disable scientific notation
     knn_library = "pynanoflann"
     dataset = load_dataset("datasets/alexandria_hdf5/train_all.h5")
+    dataset = [d for d in dataset if len(d.frac_coord) > 15]
 
     radius = 5
     max_number_neighbors = 20
 
     # Timing the first method
     start_time = time.time()
-    for cart_coord, lattice in test_method():
+    for cart_coord, lattice in test_method(dataset):
         edges1, displacements1 = compute_pbc_radius_graph(
             positions=cart_coord,
             periodic_boundaries=lattice,
@@ -37,7 +38,7 @@ if __name__ == "__main__":
 
     # Timing the second method
     start_time = time.time()
-    for cart_coord, lattice in test_method():
+    for cart_coord, lattice in test_method(dataset):
         edges2, displacements2 = fast4(
             lattice=lattice,
             cart_coord=cart_coord,
