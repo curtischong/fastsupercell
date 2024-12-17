@@ -17,7 +17,7 @@ The main benefit of this approach is that pruning for atoms inside the supercell
 However, after some testing, I realized that this approach is slower (on cpu), and that it doesn't matter. since the knn algorithm doesn't take that much time to run. it's probably not that expensive during the training process.
 
  <p align="center">
-  <img width="30%" src="supercell_pruning.png" alt="Image of how this approach reduces the number of atoms passed into the knn"/>
+  <img width="100%" src="supercell_pruning.png" alt="Image of how this approach reduces the number of atoms passed into the knn"/>
 </p>
 
 In this image, the red atoms are the original atoms in the unit cell. The red parallelepiped is the unit cell.
