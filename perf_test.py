@@ -46,5 +46,3 @@ if __name__ == "__main__":
         )
     end_time = time.time()
     print(f"fast4 took {end_time - start_time:.4f} seconds")
-
-    print("we can calculate the graph properly!")
