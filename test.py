@@ -9,7 +9,7 @@ import torch
 def edges_to_tuples(edges, displacements):
     assert edges.shape[1] == displacements.shape[0]
     tuples = []
-    for i in range(len(edges)):
+    for i in range(edges.shape[1]):
         edge = edges[i]
         displacement = displacements[i]
         tuples.append((edge[0].item(), edge[1].item(), displacement[0].item(), displacement[1].item(), displacement[2].item()))
@@ -17,6 +17,7 @@ def edges_to_tuples(edges, displacements):
 
 def graphs_are_equal(edges1, edges2, displacements1, displacements2):
     assert edges1.shape == edges2.shape
+    assert displacements1.shape == displacements2.shape
     tuples1 = edges_to_tuples(edges1, displacements1)
     tuples2 = edges_to_tuples(edges2, displacements2)
     for tuple1, tuple2 in zip(tuples1, tuples2):
@@ -39,7 +40,7 @@ if __name__ == "__main__":
         print(f"lattice: {lattice}")
         print(f"atomic_numbers: {atomic_numbers}")
 
-        radius=10.0
+        radius=1.0
 
         edges1, displacements1 = compute_pbc_radius_graph(
             positions=cart_coord,
