@@ -13,7 +13,8 @@ def edges_to_tuples(edges, displacements):
     for i in range(edges.shape[1]):
         edge = edgest[i]
         displacement = displacements[i]
-        tuples.append((edge[0].item(), edge[1].item(), displacement[0].item(), displacement[1].item(), displacement[2].item()))
+        # tuples.append((edge[0].item(), edge[1].item(), displacement[0].item(), displacement[1].item(), displacement[2].item()))
+        tuples.append((displacement[0].item(), displacement[1].item(), displacement[2].item()))
     return sorted(tuples)
 
 def graphs_are_equal(edges1, edges2, displacements1, displacements2):
@@ -47,7 +48,8 @@ if __name__ == "__main__":
         print(f"lattice: {lattice}")
         print(f"atomic_numbers: {atomic_numbers}")
 
-        radius=3.5
+        # radius=3.5
+        radius=5
 
         edges1, displacements1 = compute_pbc_radius_graph(
             positions=cart_coord,
