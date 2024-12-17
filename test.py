@@ -25,12 +25,15 @@ def graphs_are_equal(edges1, edges2, displacements1, displacements2):
 
 
 if __name__ == "__main__":
+    torch.set_printoptions(sci_mode=False)  # Disable scientific notation
     knn_library = "pynanoflann"
     dataset = load_dataset("datasets/alexandria_hdf5/train_10.h5")
     # print(dataset)
     for i, config in enumerate(dataset):
         frac_coord = torch.tensor(config.frac_coord, dtype=torch.float32)
         lattice = torch.tensor(config.lattice, dtype=torch.float32)
+
+        cart_coord = frac_coord @ lattice
         atomic_numbers = torch.tensor(config.atomic_numbers, dtype=torch.int64)
         print(f"frac_coord: {frac_coord}")
         print(f"lattice: {lattice}")
@@ -39,7 +42,7 @@ if __name__ == "__main__":
         radius=10.0
 
         edges1, displacements1 = compute_pbc_radius_graph(
-            positions=frac_coord,
+            positions=cart_coord,
             periodic_boundaries=lattice,
             radius=radius,
             max_number_neighbors=20,

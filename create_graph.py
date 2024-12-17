@@ -233,6 +233,7 @@ def positions_to_graph(supercell_positions:torch.Tensor, positions:torch.Tensor,
             -1
         )
     elif library == "pynanoflann":
+        print("orb supercell pos", supercell_positions)
         tree = NanoKDTree(
             n_neighbors=min(max_number_neighbors + 1, len(supercell_positions)),
             radius=radius,

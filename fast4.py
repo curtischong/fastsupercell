@@ -83,7 +83,9 @@ def fast4(*, lattice: torch.Tensor, frac_coord: torch.Tensor, radius: int = 5, m
     cart_coord = frac_coord @ lattice
 
     cart_supercell_coords = _compute_img_positions_torch(cart_coord, lattice)
+    cart_supercell_coords = cart_supercell_coords.transpose(0, 1)
     cart_supercell_coords = cart_supercell_coords.reshape(-1, 3)
+    print("my supercell pos", cart_supercell_coords)
 
     extended_lattice, position_offset = extend_lattice4(lattice, radius)
 
@@ -133,25 +135,3 @@ def masked_positions_to_graph(supercell_positions, positions, node_id2, radius, 
     # Finally compute the vector displacements between senders and receivers.
     vectors = supercell_positions[receivers_img_torch] - positions[senders_torch]
     return torch.stack((senders_torch, receivers), dim=0), vectors
-
-# strat:
-    # 1. use knn and get all the edges without PBC
-    # 2. manually match each of the faces with each other. the nodes can only connect to the other nodes on the other side of the plane
-
-    # how do I do this?
-    # we can just create a knn for each node
-    # screw it. I feel like the supercell appraoch is still the best cause we can ues the knn logic
-
-    # is it faster to create the 27 cube. or we just append extra nodes?
-
-
-    # in the original euclidiean cube, we find all the nodes that are near the face.
-    # then we just add it to the coords later. finally we use the kd tree
-
-    # in general, I think that drastically reducing the number of nodes is best.
-
-
-    # how do I know the radius for the face?
-
-
-    # we don't even need tod do the transofrmation. we can just slide the lattice plane and remove coords that fall outside the plane (after we get the suepercells)
