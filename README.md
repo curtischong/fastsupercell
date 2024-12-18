@@ -34,7 +34,7 @@ Here's the general algorithm:
 - 2) use the inverse lattice matrix to map these normal vectors to the unit cube
   - Since lattice matrices can be viewed as linear transformations from the R^3 standard basis to the lattice coordinates, multiplying these vector by the inverse matrix will map these normal vectors back to the standard basis.
   - The core idea is this: we do calculations in the standard basis since it's easier to calculate if a point is inside/outside the masking parallelepiped.
-  - By mapping the "distance we need to prune" to the standard basis, we can easily check if a point is inside the masking parallelepiped just by seeing if it's x-coodinate is < norm1, y-coordinate is < norm2, and z-coordinate is < norm3.
+  - By mapping the "distance we need to prune" to the standard basis, we can easily check if a point is inside the masking parallelepiped just by seeing if it's x-coodinate is < normal1_norm, y-coordinate is < normal2_norm, and z-coordinate is < normal3_norm.
 - 3) Now take the norm of these normal vectors. This norm tells us how far away from the original unit cell should we keep the atoms.
 - 4) make a supercell of the unit cell. so we have 27 copies of it
 - 5) for each of the 27 copies, if an atom is within the norm of the corresponding normal vector(s), then we keep it.

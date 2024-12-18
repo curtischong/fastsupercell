@@ -1,7 +1,7 @@
 import torch
 from create_graph import _compute_img_positions_torch, points_in_parallelepiped
-from fast4 import extend_lattice4
-from fast_approach import extend_lattice
+from pruning_algo import create_masking_parallelepiped
+from pruning_algo_incorrect import extend_lattice
 from test import load_dataset
 from visualization import  plot_points, plot_with_parallelepiped, visualize_lattice
 
@@ -29,7 +29,7 @@ def vis_points_masked_by_scaled_lattice():
     # cart_supercell_coords = supercell_coords @ lattice
 
     # extended_lattice1, position_offset1 = extend_lattice(lattice_torch, radius)
-    extended_lattice, position_offset = extend_lattice4(lattice_torch, radius)
+    extended_lattice, position_offset = create_masking_parallelepiped(lattice_torch, radius)
 
     # 1 plot the parallelepipeds
     fig = visualize_lattice(extended_lattice, position_offset.numpy()) # show the extended lattice first since it's larger and will scale the fig properly

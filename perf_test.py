@@ -1,7 +1,7 @@
 import torch
 from prep_datasets import Configuration, load_dataset
 from create_graph import compute_pbc_radius_graph
-from fast4 import fast4
+from pruning_algo import compute_pbc_radius_graph_with_pruning
 import time
 
 
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     # Timing the second method
     start_time = time.time()
     for cart_coord, lattice in test_method(dataset):
-        edges2, displacements2 = fast4(
+        edges2, displacements2 = compute_pbc_radius_graph_with_pruning(
             lattice=lattice,
             cart_coord=cart_coord,
             radius=radius,

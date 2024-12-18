@@ -1,8 +1,3 @@
-# can we use a linear transformation so instead of a parallelepiped, we create the graph in a euclidian plane?
-# this way, when calculating the distances between two atoms, we can use a bitmask
-# maybe diff axis will have diff "length" cause of the mapped distances
-# now we can generate the edges VERY fast
-# a future optimization would be to use sram instead
 
 import numpy as np
 from create_graph import NUM_OFFSETS, _compute_img_positions_torch, points_in_parallelepiped, positions_to_graph
@@ -10,9 +5,6 @@ import torch
 from pynanoflann import KDTree as NanoKDTree
 from scipy.spatial import KDTree as SciKDTree
 
-# we transform all the points to a normal 1x1x1 cube
-# then we just find the points near the edges of that cube
-# lastly we map those points to the hypercube and do the kd tree calculation for edges
 
 
 # https://shad.io/MatVis/
@@ -32,6 +24,8 @@ def normal_vectors(lattice):
 
     return n_a, -n_a, n_b, -n_b, n_c, -n_c
 
+# this approach doesn't work. Since we're extending the lengths of the lattice, but we're not extending it enough. cause the normal
+# of the parallelepiped faces (of length r) can be LONGER than the amount we extend the lattice by.
 def extend_lattice(lattice, radius):
     lengths = torch.linalg.norm(lattice, axis=1)
     unit_vectors = lattice / lengths[:, None]
@@ -41,17 +35,7 @@ def extend_lattice(lattice, radius):
     position_offset = torch.sum(-additional_lengths/2, dim=0) # dim=0 cause we want to sum up all the contributions along the x-axis (for example)
     return extended_lattice, position_offset
 
-def extend_lattice2(lattice, radius):
-    lengths = torch.linalg.norm(lattice, axis=1)
-    unit_vectors = lattice / lengths[:, None]
-
-    additional_lengths = (radius * unit_vectors)
-    extended_lattice = lattice + additional_lengths
-    position_offset = torch.sum(-additional_lengths/2, dim=0) # dim=0 cause we want to sum up all the contributions along the x-axis (for example)
-    return extended_lattice, position_offset
-
-
-def fast(*, lattice: torch.Tensor, frac_coord: torch.Tensor, radius: int, max_number_neighbors: int, knn_library: str, n_workers: int = 1):
+def compute_pbc_radius_graph_with_pruning_incorrect(*, lattice: torch.Tensor, frac_coord: torch.Tensor, radius: int, max_number_neighbors: int, knn_library: str, n_workers: int = 1):
 
     frac_coord = frac_coord
     cart_coord = frac_coord @ lattice
