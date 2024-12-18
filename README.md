@@ -27,6 +27,17 @@ The bright blue atoms are those within the radius of the unit cell (They are ins
 
 The teal atoms are those that are pruned by the algorithm. They do not fall close enough to the unit cell and will never be within the radius of the unit cell to be connected to them.
 
+### How do we determine the mask parallelepiped (teal parallelepiped)?
+
+Here's the general algorithm:
+- 1) calculate the normal vectors of the faces of the unit cell (6 vectors total - but 3 "unique" vectors since we can get the other 3 by inverting the first 3)
+- 2) use the inverse lattice matrix to map these normal vectors to the unit cube
+  - Since lattice matrices can be viewed as linear transformations from the R^3 standard basis to the lattice coordinates, multiplying these vector by the inverse matrix will map these normal vectors back to the standard basis.
+  - The core idea is this: we do calculations in the standard basis since it's easier to calculate if a point is inside/outside the masking parallelepiped.
+  - By mapping the "distance we need to prune" to the standard basis, we can easily check if a point is inside the masking parallelepiped just by seeing if it's x-coodinate is < norm1, y-coordinate is < norm2, and z-coordinate is < norm3.
+- 3) Now take the norm of these normal vectors. This norm tells us how far away from the original unit cell should we keep the atoms.
+- 4) make a supercell of the unit cell. so we have 27 copies of it
+- 5) for each of the 27 copies, if an atom is within the norm of the corresponding normal vector(s), then we keep it.
 
 ### Improvements:
 - only use the pruning algorithm for larger systems. don't prune it for smaller systems
