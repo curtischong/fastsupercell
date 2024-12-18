@@ -1,18 +1,9 @@
-# can we use a linear transformation so instead of a parallelepiped, we create the graph in a euclidian plane?
-# this way, when calculating the distances between two atoms, we can use a bitmask
-# maybe diff axis will have diff "length" cause of the mapped distances
-# now we can generate the edges VERY fast
-# a future optimization would be to use sram instead
-
 import numpy as np
 from create_graph import NUM_OFFSETS, _compute_img_positions_torch, points_in_parallelepiped, positions_to_graph
 import torch
 from pynanoflann import KDTree as NanoKDTree
 from scipy.spatial import KDTree as SciKDTree
 
-# we transform all the points to a normal 1x1x1 cube
-# then we just find the points near the edges of that cube
-# lastly we map those points to the hypercube and do the kd tree calculation for edges
 
 
 # https://shad.io/MatVis/
@@ -64,7 +55,7 @@ def compute_normals(lattice: torch.Tensor, radius: int):
 
     return normals
 
-def extend_lattice4(lattice: torch.Tensor, radius: int):
+def create_masking_parallelepiped(lattice: torch.Tensor, radius: int):
     normals = compute_normals(lattice, radius)
     inverse_lattice = torch.linalg.inv(lattice)
     inverted_normals = normals @ inverse_lattice
@@ -77,13 +68,13 @@ def extend_lattice4(lattice: torch.Tensor, radius: int):
     position_offset = torch.sum(-additional_lengths/2, dim=0) # dim=0 cause we want to sum up all the contributions along the x-axis (for example)
     return extended_lattice, position_offset
 
-def fast4(*, lattice: torch.Tensor, cart_coord: torch.Tensor, radius: int = 5, max_number_neighbors: int, n_workers: int = 1):
+def compute_pbc_radius_graph_with_pruning(*, lattice: torch.Tensor, cart_coord: torch.Tensor, radius: int = 5, max_number_neighbors: int, n_workers: int = 1):
 
     cart_supercell_coords = _compute_img_positions_torch(cart_coord, lattice)
     cart_supercell_coords = cart_supercell_coords.transpose(0, 1)
     cart_supercell_coords = cart_supercell_coords.reshape(-1, 3)
 
-    extended_lattice, position_offset = extend_lattice4(lattice, radius)
+    extended_lattice, position_offset = create_masking_parallelepiped(lattice, radius)
 
     lattice2_mask = points_in_parallelepiped(extended_lattice, position_offset, cart_supercell_coords)
     supercell2_positions = torch.masked_select(cart_supercell_coords, lattice2_mask.unsqueeze(-1)) # these are the relevant positions of the supercell (the ones closest to the lattice)
