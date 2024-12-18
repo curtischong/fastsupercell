@@ -39,9 +39,18 @@ Here's the general algorithm:
 - 4) make a supercell of the unit cell. so we have 27 copies of it
 - 5) for each of the 27 copies, if an atom is within the norm of the corresponding normal vector(s), then we keep it.
 
+### Results:
+
+The traditional approach compute_pbc_radius_graph took 40.6933 seconds
+The pruning approach compute_pbc_radius_graph_with_pruning took 70.6102 seconds
+
+These calculations were performed on an M2 max Macbook Pro. I don't think adequate parallelization makes this implementation faster to offset all the cross products required to calculate the points within the masking parallelepiped.
+
+
 ### Improvements:
 - only use the pruning algorithm for larger systems. don't prune it for smaller systems
 - Do the pruning in c++. torch is prob too slow
+- Find a better way to prune. We still need to make the supercell rn, but maybe we don't? Maybe clever algebra (similar to what I did by doing the calculations in the standard basis) can make this faster.
 
 ### install
 pip install --upgrade wheel setuptools

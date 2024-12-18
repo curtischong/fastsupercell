@@ -25,7 +25,8 @@ def normal_vectors(lattice):
     return n_a, -n_a, n_b, -n_b, n_c, -n_c
 
 # this approach doesn't work. Since we're extending the lengths of the lattice, but we're not extending it enough. cause the normal
-# of the parallelepiped faces (of length r) can be LONGER than the amount we extend the lattice by.
+# of the parallelepiped faces (of length r) can be LONGER than the amount we extend the lattice by. You can view the pruning problem by visualizing the pruned atoms in  vis_testing.py (and comparing these pruned atoms to the correct implementation)
+
 def extend_lattice(lattice, radius):
     lengths = torch.linalg.norm(lattice, axis=1)
     unit_vectors = lattice / lengths[:, None]
