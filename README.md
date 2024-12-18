@@ -45,7 +45,7 @@ The traditional approach compute_pbc_radius_graph took 40.6933 seconds
 
 The pruning approach compute_pbc_radius_graph_with_pruning took 70.6102 seconds
 
-These calculations were performed on an M2 max Macbook Pro. I don't think adequate parallelization makes this implementation faster to offset all the cross products required to calculate the points within the masking parallelepiped.
+These calculations were performed on an M2 max Macbook Pro. I think this implementation can be faster if the algorithm ran on GPU (since we can calculate in parallel the expensive cross products required to calculate the points within the masking parallelepiped).
 
 
 ### Improvements:
