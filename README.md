@@ -30,18 +30,19 @@ The teal atoms are those that are pruned by the algorithm. They do not fall clos
 ### How do we determine the mask parallelepiped (teal parallelepiped)?
 
 Here's the general algorithm:
-- 1) calculate the normal vectors of the faces of the unit cell (6 vectors total - but 3 "unique" vectors since we can get the other 3 by inverting the first 3)
-- 2) use the inverse lattice matrix to map these normal vectors to the unit cube
+1) calculate the normal vectors of the faces of the unit cell (6 vectors total - but 3 "unique" vectors since we can get the other 3 by inverting the first 3)
+2) use the inverse lattice matrix to map these normal vectors to the unit cube
   - Since lattice matrices can be viewed as linear transformations from the R^3 standard basis to the lattice coordinates, multiplying these vector by the inverse matrix will map these normal vectors back to the standard basis.
   - The core idea is this: we do calculations in the standard basis since it's easier to calculate if a point is inside/outside the masking parallelepiped.
   - By mapping the "distance we need to prune" to the standard basis, we can easily check if a point is inside the masking parallelepiped just by seeing if it's x-coodinate is < normal1_norm, y-coordinate is < normal2_norm, and z-coordinate is < normal3_norm.
-- 3) Now take the norm of these normal vectors. This norm tells us how far away from the original unit cell should we keep the atoms.
-- 4) make a supercell of the unit cell. so we have 27 copies of it
-- 5) for each of the 27 copies, if an atom is within the norm of the corresponding normal vector(s), then we keep it.
+3) Now take the norm of these normal vectors. This norm tells us how far away from the original unit cell should we keep the atoms.
+4) make a supercell of the unit cell. so we have 27 copies of it
+5) for each of the 27 copies, if an atom is within the norm of the corresponding normal vector(s), then we keep it.
 
 ### Results:
 
 The traditional approach compute_pbc_radius_graph took 40.6933 seconds
+
 The pruning approach compute_pbc_radius_graph_with_pruning took 70.6102 seconds
 
 These calculations were performed on an M2 max Macbook Pro. I don't think adequate parallelization makes this implementation faster to offset all the cross products required to calculate the points within the masking parallelepiped.
@@ -53,5 +54,7 @@ These calculations were performed on an M2 max Macbook Pro. I don't think adequa
 - Find a better way to prune. We still need to make the supercell rn, but maybe we don't? Maybe clever algebra (similar to what I did by doing the calculations in the standard basis) can make this faster.
 
 ### install
+
 pip install --upgrade wheel setuptools
+
 pip install git+https://github.com/u1234x1234/pynanoflann.git@0.0.8
