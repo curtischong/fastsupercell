@@ -69,6 +69,13 @@ if __name__ == "__main__":
             library=knn_library
         )
 
+        # edges2, displacements2 = compute_pbc_radius_graph_using_kd_tree(
+        #     lattice=lattice,
+        #     cart_coord=cart_coord,
+        #     radius=radius,
+        #     max_number_neighbors=20,
+        # )
+
         edges2, displacements2 = compute_pbc_radius_graph_with_pruning(
             lattice=lattice,
             cart_coord=cart_coord,
