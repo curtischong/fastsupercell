@@ -53,6 +53,9 @@ These calculations were performed on an M2 max Macbook Pro. I think this impleme
 - Do the pruning in c++. torch is prob too slow
 - Find a better way to prune. We still need to make the supercell rn, but maybe we don't? Maybe clever algebra (similar to what I did by doing the calculations in the standard basis) can make this faster.
 
+### Updates Jan 6 2025
+- I wrote a c++ kd tree that works with parallelpieds with PBC https://github.com/curtischong/3torus-kdtree and tried using that instead to generate the graphs. It was obviously very fast. but the shortcoming I realized is that it doesn't account for ALL of the edges. You really need to create the 3x3 supercell because two nodes can be NEIGHBORS from different cells on the supercell (meaning that message passing information can come from the same neighboring node, but with a different displacement). So there's no way to avoid creating the 3x3 supercell (my kdtree only finds the closest displacement).
+
 ### install
 
 pip install --upgrade wheel setuptools
