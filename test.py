@@ -1,5 +1,6 @@
 import numpy as np
 from create_graph import compute_pbc_radius_graph
+from pbc_kdtree import compute_pbc_radius_graph_using_kd_tree
 from pruning_algo import compute_pbc_radius_graph_with_pruning
 from prep_datasets import load_dataset
 import torch
@@ -60,6 +61,14 @@ if __name__ == "__main__":
 
         radius=5
 
+
+        edges2, displacements2 = compute_pbc_radius_graph_using_kd_tree(
+            lattice=lattice,
+            cart_coord=cart_coord,
+            radius=radius,
+            max_number_neighbors=20,
+        )
+
         edges1, displacements1 = compute_pbc_radius_graph(
             positions=cart_coord,
             periodic_boundaries=lattice,
@@ -67,13 +76,6 @@ if __name__ == "__main__":
             max_number_neighbors=20,
             brute_force=False,
             library=knn_library
-        )
-
-        edges2, displacements2 = compute_pbc_radius_graph_with_pruning(
-            lattice=lattice,
-            cart_coord=cart_coord,
-            radius=radius,
-            max_number_neighbors=20,
         )
 
         err = graphs_are_equal(edges1, edges2, displacements1, displacements2, i)
